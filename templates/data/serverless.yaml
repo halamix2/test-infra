@@ -134,6 +134,47 @@ templates:
                   local:
                     - skip_if_only_changed_documentation
                     - default
+              - jobConfig:
+                  name: pre-serverless-kaniko-executor-build
+                  image: "europe-docker.pkg.dev/kyma-project/prod/image-builder:v20240425-84f71fed"
+                  annotations:
+                    owner: otters
+                    description: function kaniko-executor build job
+                  optional: "true"
+                  args:
+                    - "--name=kaniko-executor"
+                    - "--config=/config/kaniko-build-config.yaml"
+                    - "--context=."
+                    - "--dockerfile=components/serverless/deploy/kaniko-executor/Dockerfile"
+                    - "--build-in-ado=true"
+                inheritedConfigs:
+                  global:
+                    - kaniko_buildpack
+                    - jobConfig_presubmit
+                  local:
+                    - skip_if_only_changed_documentation
+                    - default
+              - jobConfig:
+                  name: post-serverless-kaniko-executor-build
+                  image: "europe-docker.pkg.dev/kyma-project/prod/image-builder:v20240425-84f71fed"
+                  annotations:
+                    owner: otters
+                    description:  kaniko-executor build job
+                  args:
+                    - "--name=kaniko-executor"
+                    - "--config=/config/kaniko-build-config.yaml"
+                    - "--context=."
+                    - "--dockerfile=components/serverless/deploy/kaniko-executor/Dockerfile"
+                    - '--tag=$(PULL_BASE_REF)'
+                    - "--tag=$(PULL_BASE_SHA)"
+                    - "--build-in-ado=true"
+                inheritedConfigs:
+                  global:
+                    - kaniko_buildpack
+                    - jobConfig_postsubmit
+                  local:
+                    - skip_if_only_changed_documentation
+                    - default
       - to: ../../prow/jobs/kyma-project/serverless/serverless-build-runtimes.yaml
         localSets:
           default:
